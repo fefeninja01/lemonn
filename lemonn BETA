@@ -1,0 +1,55 @@
+import speech_recognition as sr
+import pyttsx3
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+
+# Configurar a autenticação do Spotify
+scope = "user-read-playback-state,user-modify-playback-state"
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+
+# Initialize the recognizer
+recognizer = sr.Recognizer()
+with sr.Microphone() as source:
+    # Greet the user
+    myspeaker = pyttsx3.init()
+    myspeaker.say("Olá, eu sou o Lemonn, seu novo assistente virtual.")
+    myspeaker.runAndWait()
+
+    print("Diga 'fé lemonn' para me ativar.")
+    while True:
+        audio = recognizer.listen(source)
+
+        try:
+            # Use the recognizer to convert the audio to text
+            text = recognizer.recognize_google(audio, language="pt-BR")
+            print(f"Você disse: {text}")
+
+            # Check if the user said the activation phrase
+            if "fé lemonn" in text.lower():
+                myspeaker.say("Sim, como posso ajudar? Qual música você gostaria de ouvir?")
+                myspeaker.runAndWait()
+
+                # Esperar a resposta do usuário
+                audio = recognizer.listen(source)
+                song_name = recognizer.recognize_google(audio, language="pt-BR")
+                print(f"Você disse: {song_name}")
+
+                # Pesquisar a música no Spotify e tocar
+                results = sp.search(q=song_name, type="track", limit=1)
+                if results["tracks"]["items"]:
+                    track_uri = results["tracks"]["items"][0]["uri"]
+                    sp.start_playback(uris=[track_uri])
+                    myspeaker.say(f"Tocando a música {song_name}.")
+                    myspeaker.runAndWait()
+                else:
+                    myspeaker.say(f"Desculpe, não consegui encontrar a música {song_name}.")
+                    myspeaker.runAndWait()
+            else:
+                myspeaker.say(f"Você disse: {text}")
+                myspeaker.runAndWait()
+        except sr.UnknownValueError:
+            myspeaker.say("Desculpe, não entendi o que você disse.")
+            myspeaker.runAndWait()
+        except sr.RequestError as e:
+            myspeaker.say(f"Houve um erro ao acessar o serviço de reconhecimento de voz: {e}")
+            myspeaker.runAndWait()
