@@ -1,11 +1,18 @@
+import os
 import speech_recognition as sr
 import pyttsx3
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 # Configurar a autenticação do Spotify
+CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+REDIRECT_URI = "http://localhost:8080"
 scope = "user-read-playback-state,user-modify-playback-state"
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
+                                              client_secret=CLIENT_SECRET,
+                                              redirect_uri=REDIRECT_URI,
+                                              scope=scope))
 
 # Initialize the recognizer
 recognizer = sr.Recognizer()
